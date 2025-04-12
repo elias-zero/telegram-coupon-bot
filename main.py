@@ -1,12 +1,29 @@
 import os
 import logging
 import pandas as pd
+from flask import Flask
+from threading import Thread
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 
-# إعداد سجل الأخطاء
+# 1. إعداد خادم Flask للـ Health Check
+app = Flask(__name__)
+
+@app.route('/health')
+def health_check():
+    """يرد بـ 'OK' عند طلب الرابط من خدمات المراقبة"""
+    return "OK", 200
+
+# 2. تشغيل الخادم في خيط منفصل
+def run_flask():
+    """تشغيل خادم Flask على منفذ 8080"""
+    app.run(host='0.0.0.0', port=8080)
+
+# 3. الجزء الخاص ببوت التليجرام
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
@@ -55,17 +72,17 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("مرحباً! أرسل اسم الكوبون (مثال: نمشي) وسأبحث عنه.")
 
 def main():
+    # بدء تشغيل خادم Flask في خيط منفصل
+    Thread(target=run_flask).start()
+    
+    # بدء تشغيل البوت
     token = os.getenv("TOKEN")
-    if not token:
-        logger.error("❌ لم يتم تعيين التوكن!")
-        return
-
-    app = ApplicationBuilder().token(token).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    application = ApplicationBuilder().token(token).build()
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     logger.info("✅ البوت يعمل...")
-    app.run_polling()
+    application.run_polling()
 
 if __name__ == '__main__':
     main()

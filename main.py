@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 def load_coupons(file_path='coupons.xlsx'):
     try:
         df = pd.read_excel(file_path)
-        required_columns = ['title', 'description', 'code', 'link', 'countries', 'note']
+        required_columns = ['title', 'description', 'code', 'link', 'countries', 'note', 'image']  # أضفنا عمود الصور
         for col in required_columns:
             if col not in df.columns:
                 logger.error(f'العمود "{col}" غير موجود!')
@@ -54,6 +54,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     coupon = find_coupon(df, user_input)
     if coupon is not None:
+        # بناء الرسالة بنفس التنسيق السابق
         response = (
             f"🎉 كوبون {coupon['title']}\n"
             f"{coupon['description']}\n\n"
@@ -61,13 +62,25 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"🌍 صالح لـ : {coupon['countries']}\n"
             f"📌 ملاحظة : {coupon['note']}\n"
             f"🛒 رابط الشراء : {coupon['link']}\n\n"
-            
             "لمزيد من الكوبونات والخصومات قم بزيارة موقعنا : \n\nhttps://www.discountcoupon.online"
         )
+        
+        # إرسال الصورة إذا كانت متوفرة
+        if pd.notna(coupon['image']) and str(coupon['image']).startswith('http'):
+            try:
+                await update.message.reply_photo(
+                    photo=coupon['image'],
+                    caption=response
+                )
+                return
+            except Exception as e:
+                logger.error(f"خطأ في إرسال الصورة: {e}")
+                await update.message.reply_text(response)
+        else:
+            await update.message.reply_text(response)
     else:
         response = "⚠️ عذراً، لم يتم العثور على الكوبون."
-    
-    await update.message.reply_text(response)
+        await update.message.reply_text(response)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("مرحباً! أرسل اسم الكوبون (مثال: نمشي بالعربية او Namshi بالإنجليزية) وسأبحث عنه.")
@@ -84,7 +97,6 @@ def main():
     
     logger.info("✅ البوت يعمل...")
     application.run_polling()
-    application.run_polling(allowed_updates=Update.ALL_TYPES)  # <-- التعديل هنا
 
 if __name__ == '__main__':
     main()

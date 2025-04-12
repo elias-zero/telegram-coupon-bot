@@ -18,24 +18,22 @@ def load_coupons(file_path='coupons.xlsx'):
         required_columns = ['title', 'description', 'code', 'link', 'countries', 'note']
         for col in required_columns:
             if col not in df.columns:
-                logger.error(f'الملف يجب أن يحتوي على عمود "{col}"')
+                logger.error(f'ملف Excel يجب أن يحتوي على عمود "{col}"')
                 return None
         return df
     except Exception as e:
         logger.error(f'خطأ في قراءة ملف Excel: {e}')
         return None
 
-# دالة البحث عن الكوبون باستخدام العمود title
+# البحث عن الكوبون باستخدام العمود title
 def find_coupon(df, coupon_name: str):
-    # نقارن القيمة المدخلة في عمود title بشكل غير حساس لحالة الأحرف
     coupon = df[df['title'].str.lower() == coupon_name.lower()]
     if not coupon.empty:
-        # استخدام أول تطابق موجود
         return coupon.iloc[0]
     else:
         return None
 
-# دالة التعامل مع الرسائل الواردة
+# التعامل مع الرسائل الواردة
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_input = update.message.text.strip()
     df = load_coupons()
@@ -45,7 +43,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     coupon_row = find_coupon(df, user_input)
     if coupon_row is not None:
-        # إعداد القالب حسب الطلب
         message = (
             f"كوبون {coupon_row['title']}\n"
             f"{coupon_row['description']}\n"
@@ -59,17 +56,21 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("عفواً، لم يتم العثور على كوبون بهذا الاسم.")
 
-# أمر البداية عند التفاعل مع البوت
+# أمر البداية
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("مرحباً! أرسل اسم الكوبون (مثال: نمشي) وسأقوم بالبحث عنه.")
+    await update.message.reply_text("مرحباً! أرسل اسم الكوبون (مثلاً: نمشي) وسأقوم بالبحث عنه.")
 
 # الدالة الرئيسية لتشغيل البوت
 async def main():
-    # استخدم التوكن المقدم مباشرةً
+    # قراءة التوكن من متغير البيئة، تأكد من أن متغير TOKEN معد في Render أو في إعدادات المشروع
     token = os.getenv("TOKEN")
-    
+    if not token:
+        logger.error("التوكن غير موجود! تأكد من إعداد متغير البيئة TOKEN.")
+        return
+
     application = ApplicationBuilder().token(token).build()
 
+    # إضافة معالجات الأوامر والرسائل
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 

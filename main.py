@@ -49,7 +49,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     df = load_coupons()
     
     if df is None:
-        await update.message.reply_text("⚠️ حدث خطأ في تحميل الكوبونات.")
+        await update.message.reply_text("⚠️  حدث خطأ في تحميل الكوبونات.")
         return
 
     coupon = find_coupon(df, user_input)

@@ -66,7 +66,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # الدالة الرئيسية لتشغيل البوت
 async def main():
     # استخدم التوكن المقدم مباشرةً
-    token = "8168455638:AAHPPdRQBM6C5ABdrLlyITTrlvRJQdkF7AU"
+    token = os.getenv("TOKEN")
     
     application = ApplicationBuilder().token(token).build()
 

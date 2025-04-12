@@ -83,6 +83,7 @@ def main():
     
     logger.info("✅ البوت يعمل...")
     application.run_polling()
+    application.run_polling(allowed_updates=Update.ALL_TYPES)  # <-- التعديل هنا
 
 if __name__ == '__main__':
     main()

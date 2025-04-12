@@ -69,7 +69,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(response)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("مرحباً! أرسل اسم الكوبون (مثال: نمشي) وسأبحث عنه.")
+    await update.message.reply_text("مرحباً! أرسل اسم الكوبون (مثال: نمشي بالعربية او Namshi بالإنجليزية) وسأبحث عنه.")
 
 def main():
     # بدء تشغيل خادم Flask في خيط منفصل

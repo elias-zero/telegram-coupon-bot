@@ -61,7 +61,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"🌍 صالح لـ: {coupon['countries']}\n"
             f"📌 ملاحظة: {coupon['note']}\n"
             f"🛒 رابط الشراء: {coupon['link']}\n\n"
-            "لمزيد من العروض: https://www.discountcoupon.online"
+            
+            "لمزيد من الكوبونات والخصومات قم بزيارة موقعنا : \n\nhttps://www.discountcoupon.online"
         )
     else:
         response = "⚠️ عذراً، لم يتم العثور على الكوبون."

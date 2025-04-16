@@ -62,7 +62,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"🌍 صالح لـ : {coupon['countries']}\n\n"
             f"📌 ملاحظة : {coupon['note']}\n\n"
             f"🛒 رابط الشراء : {coupon['link']}\n\n"
-            "لمزيد من الكوبونات والخصومات قم بزيارة موقعنا 💎 : \n\nhttps://www.discountcoupon.online"
+            "💎 لمزيد من الكوبونات والخصومات قم بزيارة موقعنا : \n\nhttps://www.discountcoupon.online"
         )
         
         # إرسال الصورة إذا كانت متوفرة

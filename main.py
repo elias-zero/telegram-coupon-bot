@@ -56,13 +56,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if coupon is not None:
         # بناء الرسالة بنفس التنسيق السابق
         response = (
-            f"🎉 كوبون {coupon['title']}\n"
-            f"{coupon['description']}\n\n"
-            f"✅ الكوبون : {coupon['code']}\n"
-            f"🌍 صالح لـ : {coupon['countries']}\n"
-            f"📌 ملاحظة : {coupon['note']}\n"
+            f"🎉 كوبون {coupon['title']}\n\n"
+            f"🔥 {coupon['description']}\n\n"
+            f"✅ الكوبون : {coupon['code']}\n\n"
+            f"🌍 صالح لـ : {coupon['countries']}\n\n"
+            f"📌 ملاحظة : {coupon['note']}\n\n"
             f"🛒 رابط الشراء : {coupon['link']}\n\n"
-            "لمزيد من الكوبونات والخصومات قم بزيارة موقعنا : \n\nhttps://www.discountcoupon.online"
+            "لمزيد من الكوبونات والخصومات قم بزيارة موقعنا 💎 : \n\nhttps://www.discountcoupon.online"
         )
         
         # إرسال الصورة إذا كانت متوفرة

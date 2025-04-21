@@ -83,7 +83,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # 5. أمر /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "مرحباً! أرسل اسم الكوبون (مثال: نمشي) وسأبحث عنه."
+        "مرحباً! أرسل اسم الكوبون (مثال: نمشي بالعربية او Namshi بالإنجليزية) وسأبحث عنه."
     )
 
 # 6. نقطة الدخول

@@ -23,33 +23,45 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# 3. تحميل الكوبونات
+# 3. تحميل الكوبونات مع تتبع اللوج
 def load_coupons(file_path='coupons.xlsx'):
+    logger.info(f"🗂️ Attempting to load coupons from: {file_path}")
+    logger.info(f"🌐 Current working directory: {os.getcwd()}")
     try:
         df = pd.read_excel(file_path)
+        logger.info(f"✅ Excel file read successfully, shape: {df.shape}")
         required_columns = [
             'title', 'description', 'code',
             'link', 'countries', 'note', 'image'
         ]
         for col in required_columns:
             if col not in df.columns:
-                logger.error(f'العمود "{col}" غير موجود!')
+                logger.error(f'❌ Column "{col}" is missing in the Excel file!')
                 return None
+        logger.info(f"📋 All required columns are present: {required_columns}")
         return df
     except Exception as e:
-        logger.error(f'خطأ في قراءة الملف: {e}')
+        logger.error(f'⚠️ Error reading Excel file: {e}')
         return None
 
+# 4. البحث عن الكوبون ومسجل للوج
 def find_coupon(df, coupon_name: str):
+    logger.info(f"🔍 Searching for coupon with title: '{coupon_name}'")
     coupon = df[df['title'].str.lower() == coupon_name.lower()]
-    return coupon.iloc[0] if not coupon.empty else None
+    if coupon.empty:
+        logger.info("❌ No matching coupon found.")
+        return None
+    logger.info("✅ Coupon found, returning the first match.")
+    return coupon.iloc[0]
 
-# 4. التعامل مع الرسائل الواردة
+# 5. التعامل مع الرسائل الواردة
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_input = update.message.text.strip()
+    logger.info(f"📩 Received user input: {user_input}")
     df = load_coupons()
     
     if df is None:
+        logger.error("⚠️ Failed to load coupons DataFrame.")
         await update.message.reply_text("⚠️ حدث خطأ في تحميل الكوبونات.")
         return
 
@@ -67,35 +79,43 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
         image_url = coupon.get('image')
-        # إذا كان هناك رابط صورة صالح، نرسلها مع التسمية
         if isinstance(image_url, str) and image_url.strip():
             try:
+                logger.info(f"📸 Sending photo for coupon: {image_url}")
                 await update.message.reply_photo(photo=image_url, caption=response)
             except Exception as e:
-                logger.warning(f"فشل إرسال الصورة ({e}), سنرسل النص فقط.")
+                logger.warning(f"⚠️ Failed to send image ({e}), sending text only.")
                 await update.message.reply_text(response)
         else:
-            # لا توجد صورة، نرسل النص فقط
+            logger.info("✉️ No image URL, sending text response.")
             await update.message.reply_text(response)
     else:
+        logger.info("⚠️ Coupon not found, notifying user.")
         await update.message.reply_text("⚠️ عذراً، لم يتم العثور على الكوبون.")
 
-# 5. أمر /start
+# 6. أمر /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info(f"🔔 /start command received from user {update.effective_user.id}")
     await update.message.reply_text(
         "مرحباً! أرسل اسم الكوبون (مثال: نمشي بالعربية او Namshi بالإنجليزية) وسأبحث عنه."
     )
 
-# 6. نقطة الدخول
+# 7. نقطة الدخول
 def main():
+    logger.info("🚀 Starting Flask health check thread...")
     Thread(target=run_flask, daemon=True).start()
     
     token = os.getenv("TOKEN")
+    if not token:
+        logger.error("❌ TOKEN environment variable is not set!")
+        return
+    logger.info("🔑 Token loaded from env, initializing bot...")
+
     application = ApplicationBuilder().token(token).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
-    logger.info("✅ البوت يعمل...")
+    logger.info("✅ Bot is up and running, polling for messages...")
     application.run_polling()
 
 if __name__ == '__main__':

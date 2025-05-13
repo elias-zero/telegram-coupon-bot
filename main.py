@@ -98,7 +98,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         if suggestion:
             await update.message.reply_text(
-                f"❓ لم يتم العثور على الكوبون المطلوب.\nهل كنت تقصد: **{suggestion}**؟"
+                f"❓ لم يتم العثور على الكوبون المطلوب.\nهل كنت تقصد: "{suggestion}"؟"
             )
         else:
             await update.message.reply_text(

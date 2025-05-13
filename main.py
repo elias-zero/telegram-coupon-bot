@@ -23,13 +23,18 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# 3. تحميل الكوبونات مع تتبع اللوج
+# 3. تحميل الكوبونات مع تنظيف البيانات وتتبع اللوج
 def load_coupons(file_path='coupons.xlsx'):
     logger.info(f"🗂️ Attempting to load coupons from: {file_path}")
     logger.info(f"🌐 Current working directory: {os.getcwd()}")
     try:
         df = pd.read_excel(file_path)
         logger.info(f"✅ Excel file read successfully, shape: {df.shape}")
+
+        # تنظيف القيم النصية من مسافات بيضاء
+        df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
+        logger.info("✂️ Trimmed whitespace from all string cells.")
+
         required_columns = [
             'title', 'description', 'code',
             'link', 'countries', 'note', 'image'
@@ -44,19 +49,23 @@ def load_coupons(file_path='coupons.xlsx'):
         logger.error(f'⚠️ Error reading Excel file: {e}')
         return None
 
-# 4. البحث عن الكوبون ومسجل للوج
+# 4. البحث عن الكوبون مع مطابقة بعد تنظيف
+
 def find_coupon(df, coupon_name: str):
-    logger.info(f"🔍 Searching for coupon with title: '{coupon_name}'")
-    coupon = df[df['title'].str.lower() == coupon_name.lower()]
-    if coupon.empty:
+    coupon_search = coupon_name.strip().lower()
+    logger.info(f"🔍 Searching for coupon with title: '{coupon_search}'")
+    # مقارنة غير حساسة لحالة الأحرف بعد التنظيف
+    df['title_clean'] = df['title'].astype(str).str.lower()
+    match = df[df['title_clean'] == coupon_search]
+    if match.empty:
         logger.info("❌ No matching coupon found.")
         return None
     logger.info("✅ Coupon found, returning the first match.")
-    return coupon.iloc[0]
+    return match.iloc[0]
 
 # 5. التعامل مع الرسائل الواردة
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_input = update.message.text.strip()
+    user_input = update.message.text
     logger.info(f"📩 Received user input: {user_input}")
     df = load_coupons()
     
@@ -79,7 +88,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
         image_url = coupon.get('image')
-        if isinstance(image_url, str) and image_url.strip():
+        if isinstance(image_url, str) and image_url:
             try:
                 logger.info(f"📸 Sending photo for coupon: {image_url}")
                 await update.message.reply_photo(photo=image_url, caption=response)
